@@ -3,6 +3,8 @@ import cors from 'cors';
 import { db } from './db.js'
 import bcrypt from "bcrypt";
 import jwt from 'jsonwebtoken';
+import cookieParser from 'cookie-parser';
+import path from 'path';
 
 
 const PORT = 5000;
@@ -10,26 +12,17 @@ const app = express();
 const SECRET = process.env.JWT_SECRET;
 
 
-app.use(cors());
+app.use(cors(
+    {
+        origin: 'http://localhost:3000',
+        credentials: true
+    }
+));
 app.use(express.json());
-
-// app.get('/', async (req, res) => {
-
-//     try {
-
-//         const dbData = await db.query(`SELECT * FROM users`)
-//         res.status(200).send({ status: "success", message: "successfully get" })
-
-//     } catch (error) {
-//         console.log(error)
-//         res.status(500).send({ status: "error", message: "Internal server error" })
-//     }
-
-// });
+app.use(cookieParser());
 
 
-
-app.post('/signup', async (req, res) => {
+app.post('/api1/signup', async (req, res) => {
     const reqBody = req.body;
 
     if (!reqBody.full_name || !reqBody.email || !reqBody.password_hash) {
@@ -62,9 +55,7 @@ app.post('/signup', async (req, res) => {
 
 });
 
-
-
-app.post('/login', async (req, res) => {
+app.post('/api1/login', async (req, res) => {
     const reqBody = req.body;
 
     if (!reqBody.email || !reqBody.password_hash) {
@@ -92,8 +83,8 @@ app.post('/login', async (req, res) => {
 
         const userToken = jwt.sign({
             ...currentUser,
-            iat: Date.now() / 10000,
-            exp: (Date.now / 1000) + (60 * 60 * 24)
+            iat: (Date.now() / 1000),
+            exp: (Date.now() / 1000) + (60 * 60 * 24)
 
 
         }, SECRET);
@@ -114,8 +105,60 @@ app.post('/login', async (req, res) => {
 
 });
 
+app.get('/api1/me', (req, res) => {
+    const token = req.cookies?.Token;
+    if (!token) {
+        res.status(401).send({ status: "error", message: "Unauthorized" });
+        return;
+    };
+
+    jwt.verify(token, SECRET, (err, DecodedData) => {
+        if (err) {
+            res.status(401).send({ status: "error", message: "Invalid Token" });
+            return;
+        }
+
+
+        const nowDate = (new Date() / 1000);
+        if (DecodedData.exp < nowDate) {
+            res.cookie('Token', '', {
+                maxAge: 1,
+                httpOnly: true,
+                secure: true
+            })
+            res.status(401).send({ status: "error", message: "Token expired" });
+            return;
+        }
+
+        let Data = DecodedData;
+        delete Data.iat;
+        delete Data.exp;
+
+        res.status(200).send({ status: "succes", user: Data })
+
+    });
+
+
+});
+
+app.post('/api1/logout', (req, res) => {
+
+    res.clearCookie('Token', {
+        httpOnly: true,
+        secure: true
+    });
+
+    res.status(200).send({ status: "succes", message: "User Logout Successfully" });
+});
+
+
+
+const __dirname = path.resolve();
+const __frontend = path.join(__dirname, './ecommerc-web/build');
+app.use('/', express.static(__frontend));
+app.use("/*splat", express.static(__frontend));
 
 
 app.listen(PORT, () => {
-    console.log(`app is running on port ${PORT}`)
-})
+    console.log(`app is running on port ${PORT}`);
+});

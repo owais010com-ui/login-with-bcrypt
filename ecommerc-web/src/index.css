@@ -1,13 +1,728 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Inter:wght@400;500;600&display=swap');
+
+/* ---------- Design tokens ---------- */
+:root {
+  --bg: #050a14;
+  --surface: #080f1e;
+  --field: #0a1222;
+  --border: #1b2740;
+  --border-hover: #2a3a5c;
+  --text: #f3f6fc;
+  --muted: #7d8aa6;
+  --accent: #3b82f6;
+  --accent-2: #22d3ee;
+  --danger: #f2645f;
+  --radius: 14px;
+  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+/* ---------- Base ---------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text);
+  background:
+    radial-gradient(60% 50% at 0% 100%, rgba(34, 211, 238, 0.10), transparent 60%),
+    radial-gradient(50% 40% at 100% 0%, rgba(59, 130, 246, 0.10), transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0 0 0.4em;
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+
+h1 {
+  font-size: clamp(2rem, 5vw, 2.5rem);
+}
+
+h2 {
+  font-size: 1.75rem;
+}
+
+h3 {
+  font-size: 1.25rem;
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+a:hover {
+  color: #6da3ff;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+/* Plain inputs anywhere in the app (not inside .field) */
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 14px 16px;
+  background: var(--field);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+input:hover,
+select:hover,
+textarea:hover {
+  border-color: var(--border-hover);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.14);
+}
+
+::placeholder {
+  color: var(--muted);
+}
+
+/* Dark autofill (browsers paint it white/yellow otherwise) */
+input:-webkit-autofill,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--text);
+  caret-color: var(--text);
+  box-shadow: 0 0 0 1000px var(--field) inset;
+  transition: background-color 9999s ease-out;
+}
+
+/* Keyboard focus */
+:focus-visible {
+  outline: 2px solid var(--accent-2);
+  outline-offset: 3px;
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: none;
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  height: 54px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: var(--radius);
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(90deg, #2f6bff 0%, #22c7ee 100%);
+  box-shadow: 0 10px 30px -8px rgba(47, 107, 255, 0.55);
+  transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
+}
+
+.btn:hover {
+  filter: brightness(1.08);
+  box-shadow: 0 14px 36px -8px rgba(47, 107, 255, 0.7);
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  filter: none;
+  box-shadow: none;
+}
+
+.btn--ghost {
+  width: auto;
+  height: 44px;
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+  box-shadow: none;
+}
+
+.btn--ghost:hover {
+  filter: none;
+  border-color: var(--border-hover);
+  background: rgba(255, 255, 255, 0.03);
+  box-shadow: none;
+}
+
+/* ---------- Form field (icon + floating label) ---------- */
+.form {
+  display: grid;
+  gap: 18px;
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 58px;
+  padding: 0 16px;
+  background: var(--field);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.field:hover {
+  border-color: var(--border-hover);
+}
+
+.field:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.14), 0 0 28px rgba(59, 130, 246, 0.18);
+}
+
+.field__icon {
+  display: flex;
+  flex: none;
+  color: var(--muted);
+  transition: color 0.15s;
+}
+
+.field:focus-within .field__icon {
+  color: var(--accent);
+}
+
+.field__body {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+}
+
+.field input {
+  height: 100%;
+  padding: 18px 0 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.field input:focus {
+  border: 0;
+  box-shadow: none;
+}
+
+.field label {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+  transition: top 0.15s, transform 0.15s, font-size 0.15s, color 0.15s, letter-spacing 0.15s;
+}
+
+.field input:focus+label,
+.field input:not(:placeholder-shown)+label {
+  top: 11px;
+  transform: none;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.field__toggle {
+  display: flex;
+  padding: 6px;
+  margin-right: -6px;
+  background: none;
+  border: 0;
+  border-radius: 8px;
+  color: var(--muted);
+}
+
+.field__toggle:hover {
+  color: var(--text);
+}
+
+/* Error state */
+.field--error,
+.field--error:hover,
+.field--error:focus-within {
+  border-color: var(--danger);
+}
+
+.field--error:focus-within {
+  box-shadow: 0 0 0 4px rgba(242, 100, 95, 0.14);
+}
+
+.field--error input:focus+label,
+.field--error input:not(:placeholder-shown)+label {
+  color: var(--danger);
+}
+
+.field__error {
+  margin: 8px 0 0 2px;
+  font-size: 0.8125rem;
+  color: var(--danger);
+}
+
+/* Checkbox row */
+.check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.check input {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  background: none;
+  border: 0;
+  box-shadow: none;
+  accent-color: var(--accent);
+}
+
+.check input:focus-visible {
+  outline: 2px solid var(--accent-2);
+  outline-offset: 3px;
+}
+
+/* ---------- Auth pages (login / signup) ---------- */
+.auth-page {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 440px;
+  padding: 40px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.8);
+}
+
+.auth-eyebrow {
+  margin-bottom: 12px;
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.auth-sub {
+  margin-bottom: 28px;
+  color: var(--muted);
+}
+
+.auth-alert {
+  padding: 12px 14px;
+  border: 1px solid rgba(242, 100, 95, 0.4);
+  border-radius: 12px;
+  background: rgba(242, 100, 95, 0.08);
+  font-size: 0.875rem;
+  color: #ff9a96;
+}
+
+.auth-alt {
+  margin-top: 24px;
+  text-align: center;
+  font-size: 0.9375rem;
+  color: var(--muted);
+}
+
+.auth-foot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+/* ---------- App pages (home etc.) ---------- */
+.page {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 48px 24px;
+}
+
+.page__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.page__header h1 {
+  margin: 0;
+}
+
+.card {
+  padding: 28px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+}
+
+.details {
+  margin: 0;
+}
+
+.details__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.details__row:first-child {
+  padding-top: 0;
+}
+
+.details__row:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.details dt {
+  color: var(--muted);
+}
+
+.details dd {
+  margin: 0;
+  font-weight: 500;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- Home (centered profile card) ---------- */
+.home-page {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.home-card {
+  width: 100%;
+  max-width: 440px;
+  padding: 40px;
+  text-align: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.8);
+}
+
+.home-card h1 {
+  margin: 0 0 10px;
+}
+
+.avatar {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 20px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  color: #fff;
+  background: linear-gradient(135deg, #2f6bff, #22c7ee);
+  box-shadow: 0 10px 30px -8px rgba(47, 107, 255, 0.55);
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent-2);
+}
+
+.home-card .details {
+  margin: 28px 0;
+  text-align: left;
+}
+
+/* ---------- Animations ---------- */
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes shake {
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  20% {
+    transform: translateX(-6px);
+  }
+
+  40% {
+    transform: translateX(6px);
+  }
+
+  60% {
+    transform: translateX(-4px);
+  }
+
+  80% {
+    transform: translateX(4px);
+  }
+}
+
+/* Card slides in first, then its content follows one by one */
+.auth-card,
+.home-card {
+  animation: pop 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.auth-eyebrow,
+.auth-card h1,
+.auth-sub,
+.form>*,
+.auth-alt,
+.auth-foot,
+.home-card>* {
+  animation: rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--i, 0) * 60ms + 120ms);
+}
+
+.auth-eyebrow {
+  --i: 0;
+}
+
+.auth-card h1 {
+  --i: 1;
+}
+
+.auth-sub {
+  --i: 2;
+}
+
+.form> :nth-child(1) {
+  --i: 3;
+}
+
+.form> :nth-child(2) {
+  --i: 4;
+}
+
+.form> :nth-child(3) {
+  --i: 5;
+}
+
+.form> :nth-child(4) {
+  --i: 6;
+}
+
+.form> :nth-child(5) {
+  --i: 7;
+}
+
+.form> :nth-child(6) {
+  --i: 8;
+}
+
+.form> :nth-child(7) {
+  --i: 9;
+}
+
+.auth-alt {
+  --i: 10;
+}
+
+.auth-foot {
+  --i: 11;
+}
+
+.home-card> :nth-child(1) {
+  --i: 0;
+}
+
+.home-card> :nth-child(2) {
+  --i: 1;
+}
+
+.home-card> :nth-child(3) {
+  --i: 2;
+}
+
+.home-card> :nth-child(4) {
+  --i: 3;
+}
+
+.home-card> :nth-child(5) {
+  --i: 4;
+}
+
+/* Errors appear right away, and the invalid field shakes once */
+.form>.auth-alert {
+  animation-delay: 0s;
+}
+
+.field__error {
+  animation: fade 0.2s ease both;
+}
+
+.field--error {
+  animation: shake 0.35s ease;
+}
+
+/* Gradient slides across the button on hover */
+.btn {
+  background-size: 200% 100%;
+  background-position: 0% 0;
+  transition: transform 0.15s, box-shadow 0.15s, filter 0.15s, background-position 0.4s ease;
+}
+
+.btn:hover {
+  background-position: 100% 0;
+}
+
+.btn--ghost {
+  background: transparent;
+}
+
+/* ---------- Responsive + motion ---------- */
+@media (max-width: 480px) {
+
+  .auth-card,
+  .home-card {
+    padding: 28px 20px;
+    border-radius: 20px;
+  }
+
+  .page {
+    padding: 32px 16px;
+  }
+}
+
+/* If the OS asks for reduced motion: keep gentle fades, drop the movement */
+@media (prefers-reduced-motion: reduce) {
+  @keyframes pop {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes shake {
+
+    from,
+    to {
+      transform: none;
+    }
+  }
+
+  .btn,
+  .btn:hover {
+    transition-duration: 0.01ms;
+  }
 }
