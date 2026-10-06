@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react';
-import axios from 'axios';
 import { Link } from 'react-router';
 import { GlobalContext } from '../context/Context';
+import api from '../components/api';
 
 const svgProps = {
     width: 18,
@@ -54,7 +54,7 @@ const Login = () => {
 
         setSubmitting(true);
         try {
-            const apiResponse = await axios.post('/api1/login', {
+            const apiResponse = await api.post('login', {
                 "email": email,
                 "password_hash": password
             }, { withCredentials: true });

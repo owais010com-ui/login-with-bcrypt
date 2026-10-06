@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import axios from 'axios';
+import api from '../components/api';
 import { Link, useNavigate } from 'react-router';
 import { GlobalContext } from '../context/Context';
 
@@ -43,7 +43,7 @@ const Signup = () => {
     const [email, setEmail] = useState("");
     const [phone, setPhone] = useState("");
     const [password, setPassword] = useState("");
-    const [isSeller, setIsSeller] = useState(false);
+    // const [isSeller, setIsSeller] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [errors, setErrors] = useState({});
     const [apiError, setApiError] = useState("");
@@ -67,12 +67,11 @@ const Signup = () => {
 
         setSubmitting(true);
         try {
-            await axios.post('/api1/signup', {
+            await api.post('/signup', {
                 "full_name": fullName,
                 "email": email,
                 "password_hash": password,
                 "phone_num": phone,
-                "isSeller": isSeller
             });
 
             navigate('/login');
@@ -169,15 +168,6 @@ const Signup = () => {
                         </div>
                         {errors.password && <p className="field__error">{errors.password}</p>}
                     </div>
-
-                    <label className="check">
-                        <input
-                            type="checkbox"
-                            checked={isSeller}
-                            onChange={(e) => setIsSeller(e.target.checked)}
-                        />
-                        <span>Register as a seller</span>
-                    </label>
 
                     {apiError && <p className="auth-alert" role="alert">{apiError}</p>}
 

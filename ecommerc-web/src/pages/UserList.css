@@ -1,0 +1,168 @@
+.user-list-page {
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 48px 24px;
+}
+
+.user-list-container {
+  display: grid;
+  gap: 24px;
+}
+
+.user-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.user-count {
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.user-toolbar {
+  display: flex;
+  align-items: center;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  background: var(--field);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  width: 280px;
+}
+
+.search-box input {
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.table-wrapper {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.users-table th {
+  text-align: left;
+  padding: 14px 20px;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.users-table td {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.users-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.user-id {
+  color: var(--muted);
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, #2f6bff, #22c7ee);
+}
+
+.user-email {
+  color: var(--muted);
+}
+
+.role-badge,
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  border: 1px solid var(--border);
+}
+
+.role-badge.admin {
+  color: var(--accent-2);
+}
+
+.role-badge.seller {
+  color: var(--accent);
+}
+
+.role-badge.buyer {
+  color: var(--muted);
+}
+
+.status-badge .status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.status-badge.active {
+  color: #4ade80;
+}
+
+.status-badge.disabled {
+  color: var(--danger);
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.disable-btn,
+.delete-btn {
+  width: auto;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  background: var(--field);
+  border: 1px solid var(--border);
+}
+
+.delete-btn {
+  color: var(--danger);
+}
+
+.no-users {
+  text-align: center;
+  color: var(--muted);
+  padding: 32px;
+}

@@ -1,11 +1,14 @@
-import { useContext, useEffect } from 'react';
 import './App.css';
+import Home from './pages/Home';
 import Login from './pages/login';
 import Signup from './pages/signup';
+import Product from './pages/product';
+import UserList from './pages/userList';
+import api from './components/api';
 import { Routes, Route, Navigate } from 'react-router';
 import { GlobalContext } from './context/Context';
-import Home from './pages/Home';
-import axios from 'axios';
+import { useContext, useEffect } from 'react';
+import CategoryList from './pages/CategoryList';
 
 function App() {
   let { state, dispatch } = useContext(GlobalContext);
@@ -14,7 +17,7 @@ function App() {
 
   const userCheck = async () => {
     try {
-      const apiResponse = await axios.get('/api1/me', { withCredentials: true });
+      const apiResponse = await api.get('/me');
       dispatch({ type: 'USER_LOGIN', user: apiResponse.data.user });
 
     } catch (error) {
@@ -34,7 +37,17 @@ function App() {
       {state.isLogin ?
         <Routes>
           <Route path='/home' element={<Home />} />
+          {state.user.role === "admin" ?
+            <>
+              <Route path='/userList' element={<UserList />} />
+              <Route path='/categories' element={<CategoryList />} />
+            </>
+            :
+            null
+          }
+          <Route path='/products' element={<Product />} />
           <Route path='*' element={<Navigate to='/home' />} />
+
         </Routes>
         :
         state.isLogin === false ?
@@ -46,6 +59,10 @@ function App() {
           :
           <p>Loading....</p>
       }
+      {/* <Routes>
+        <Route path='/home' element={<Home />} />
+      </Routes> */}
+
     </div >
   );
 }

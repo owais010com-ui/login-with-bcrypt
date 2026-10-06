@@ -1,0 +1,608 @@
+import axios from "axios";
+import React, { useContext, useEffect, useState } from "react";
+import { GlobalContext } from "../context/Context";
+import api from "../components/api";
+import "./Product.css";
+
+const Product = () => {
+    let { state } = useContext(GlobalContext);
+
+    const [products, setProducts] = useState([]);
+    const [categories, setCategories] = useState([]);
+    const [showAddForm, setShowAddForm] = useState(false);
+    const [files, setFiles] = useState([]);
+    const [price, setPrice] = useState("0");
+    const [description, setDescription] = useState("");
+    const [stock, setStock] = useState("0");
+    const [productName, setProductName] = useState("");
+    const [category, setCategory] = useState("");
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [submitting, setSubmitting] = useState(false);
+    const [toasts, setToasts] = useState([]);
+    const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+
+    const showToast = (message, type = "success") => {
+        const id = Date.now();
+        setToasts((prev) => [...prev, { id, message, type }]);
+        setTimeout(() => {
+            setToasts((prev) => prev.filter((t) => t.id !== id));
+        }, 3000);
+    };
+
+    const getProducts = async () => {
+        try {
+            const apiRes = await api.get(`/products`);
+            setProducts(apiRes.data.products);
+        } catch (error) {
+            console.log("err", error);
+        }
+    };
+
+    const getCategories = async () => {
+        try {
+            const apiRes = await api.get(`/categories`);
+            setCategories(apiRes.data.categories);
+        } catch (error) {
+            console.log("err", error);
+        }
+    };
+
+    useEffect(() => {
+        getProducts();
+        getCategories();
+    }, []);
+
+    const uploadImg = async (file) => {
+        try {
+            const formData = new FormData();
+
+            formData.append("file", file);
+            formData.append("upload_preset", "posts-img");
+
+            const uploadedImg = await axios.post(
+                "https://api.cloudinary.com/v1_1/dpcvy4xll/upload",
+                formData
+            );
+
+            setFiles((prev) => [...prev, uploadedImg.data.url]);
+        } catch (error) {
+            console.log("Err", error);
+        }
+    };
+
+    const resetForm = () => {
+        setProductName("");
+        setCategory("");
+        setFiles([]);
+        setPrice("0");
+        setStock("0");
+        setDescription("");
+    };
+
+    const addProduct = async (e) => {
+        e.preventDefault();
+        if (submitting) return;
+        setSubmitting(true);
+
+        try {
+            const apiRes = await api.post("/products", {
+                category_id: category,
+                name: productName,
+                description: description,
+                images: files,
+                price: price,
+                stock: stock
+            });
+
+            getProducts();
+            showToast(apiRes.data.message, "success");
+            resetForm();
+            setShowAddForm(false);
+        } catch (error) {
+            console.log("Err", error);
+            showToast(error.response?.data?.message || "Something went wrong", "error");
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const deleteProduct = async (id) => {
+        try {
+            const apiRes = await api.delete(`/products/${id}`);
+            getProducts();
+            showToast(apiRes.data.message, "success");
+        } catch (error) {
+            console.log("Err", error);
+            showToast(error.response?.data?.message || "Something went wrong", "error");
+        } finally {
+            setConfirmDeleteId(null);
+        }
+    };
+
+    return (
+        <>
+            {confirmDeleteId && (
+                <div className="confirm-overlay">
+                    <div className="confirm-box">
+                        <p>Delete this product?</p>
+                        <div className="confirm-actions">
+                            <button className="cancel-product-btn" onClick={() => setConfirmDeleteId(null)}>
+                                Cancel
+                            </button>
+                            <button className="confirm-delete-btn" onClick={() => deleteProduct(confirmDeleteId)}>
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )
+            }
+            <div className="product-page">
+
+                <div className="toast-container">
+                    {toasts.map((toast) => (
+                        <div key={toast.id} className={`toast toast--${toast.type}`}>
+                            {toast.message}
+                        </div>
+                    ))}
+                </div>
+
+                <div className="product-container">
+
+                    {/* Page Header */}
+
+                    <div className="product-header">
+
+                        <div>
+                            <h1>Products</h1>
+                            <p>Manage your products and inventory</p>
+                        </div>
+
+                        {state.user.role == "admin" ? (
+                            <button
+                                className="add-product-btn"
+                                onClick={() => setShowAddForm(true)}
+                            >
+                                <span>+</span>
+                                Add Product
+                            </button>
+                        ) : null}
+
+                    </div>
+
+                    {/* Add Product Form */}
+
+                    {showAddForm ? (
+                        <div className="product-form-card">
+
+                            <div className="form-header">
+
+                                <div>
+                                    <h2>Add New Product</h2>
+                                    <p>
+                                        Enter the product details below
+                                    </p>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    className="close-form-btn"
+                                    onClick={() => setShowAddForm(false)}
+                                >
+                                    ×
+                                </button>
+
+                            </div>
+
+                            <form
+                                onSubmit={addProduct}
+                                className="product-form"
+                            >
+
+                                {/* Product Name */}
+
+                                <div className="form-group">
+
+                                    <label htmlFor="productName">
+                                        Product Name
+                                    </label>
+
+                                    <input
+                                        id="productName"
+                                        type="text"
+                                        placeholder="Enter product name"
+                                        value={productName}
+                                        onChange={(e) =>
+                                            setProductName(e.target.value)
+                                        }
+                                    />
+
+                                </div>
+
+                                {/* Category */}
+
+                                <div className="form-group">
+
+                                    <label htmlFor="category">
+                                        Category
+                                    </label>
+
+                                    <select
+                                        id="category"
+                                        value={category}
+                                        onChange={(e) =>
+                                            setCategory(e.target.value)
+                                        }
+                                    >
+                                        <option value="">
+                                            Select Category
+                                        </option>
+
+                                        {categories.map((category) => (
+                                            <option
+                                                key={category.id}
+                                                value={category.id}
+                                            >
+                                                {category.name}
+                                            </option>
+                                        ))}
+
+                                    </select>
+
+                                </div>
+
+                                {/* Images */}
+
+                                <div className="form-group">
+
+                                    <label>
+                                        Product Images
+                                    </label>
+
+                                    <div className="upload-box">
+
+                                        <div className="upload-icon">
+                                            📷
+                                        </div>
+
+                                        <p>
+                                            Upload product image
+                                        </p>
+
+                                        <span>
+                                            PNG, JPG or JPEG
+                                        </span>
+
+                                        <input
+                                            type="file"
+                                            onChange={(e) => {
+                                                console.log(
+                                                    "Upload File:",
+                                                    e.target.files[0]
+                                                );
+
+                                                uploadImg(
+                                                    e.target.files[0]
+                                                );
+                                            }}
+                                        />
+
+                                    </div>
+
+                                    {/* Uploaded Images */}
+
+                                    {files.length > 0 && (
+                                        <div className="uploaded-files">
+
+                                            {files.map((file, i) => {
+                                                return (
+                                                    <div
+                                                        className="uploaded-image"
+                                                        key={i}
+                                                    >
+
+                                                        <img
+                                                            src={file}
+                                                            alt=""
+                                                        />
+
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                const allFiles = [
+                                                                    ...files
+                                                                ];
+
+                                                                allFiles.splice(
+                                                                    i,
+                                                                    1
+                                                                );
+
+                                                                setFiles(
+                                                                    allFiles
+                                                                );
+                                                            }}
+                                                        >
+                                                            ×
+                                                        </button>
+
+                                                    </div>
+                                                );
+                                            })}
+
+                                        </div>
+                                    )}
+
+                                </div>
+
+                                {/* Price + Stock */}
+
+                                <div className="form-row">
+
+                                    <div className="form-group">
+
+                                        <label htmlFor="price">
+                                            Price
+                                        </label>
+
+                                        <div className="input-with-symbol">
+                                            <span>Rs.</span>
+
+                                            <input
+                                                id="price"
+                                                type="number"
+                                                value={price}
+                                                onChange={(e) =>
+                                                    setPrice(e.target.value)
+                                                }
+                                            />
+                                        </div>
+
+                                    </div>
+
+                                    <div className="form-group">
+
+                                        <label htmlFor="stock">
+                                            Stock
+                                        </label>
+
+                                        <input
+                                            id="stock"
+                                            type="number"
+                                            value={stock}
+                                            onChange={(e) =>
+                                                setStock(e.target.value)
+                                            }
+                                        />
+
+                                    </div>
+
+                                </div>
+
+                                {/* Description */}
+
+                                <div className="form-group">
+
+                                    <label htmlFor="description">
+                                        Description
+                                    </label>
+
+                                    <textarea
+                                        id="description"
+                                        rows="5"
+                                        placeholder="Enter product description"
+                                        value={description}
+                                        onChange={(e) =>
+                                            setDescription(e.target.value)
+                                        }
+                                    />
+
+                                </div>
+
+                                {/* Form Actions */}
+
+                                <div className="form-actions">
+
+                                    <button
+                                        type="button"
+                                        className="cancel-product-btn"
+                                        onClick={() => {
+                                            resetForm();
+                                            setShowAddForm(false);
+                                        }}
+                                    >
+                                        Cancel
+                                    </button>
+
+                                    <button
+                                        type="submit"
+                                        className="save-product-btn"
+                                        disabled={submitting}
+                                    >
+                                        {submitting ? "Adding..." : "Add Product"}
+                                    </button>
+
+                                </div>
+
+                            </form>
+
+                        </div>
+                    ) : null}
+
+                    {/* Products Section */}
+
+                    <div className="products-section">
+
+                        <div className="products-section-header">
+
+                            <div>
+                                <h2>All Products</h2>
+                                <p>
+                                    {products.length} products available
+                                </p>
+                            </div>
+
+                        </div>
+
+                        {products.length > 0 ? (
+
+                            <div className="products-grid">
+
+                                {products.map((product) => (
+
+                                    <div
+                                        className="product-card"
+                                        key={product.id}
+                                    >
+
+                                        {/* Product Image */}
+
+                                        <div className="product-image">
+
+                                            {product.images &&
+                                                product.images.length > 0 ? (
+                                                <img
+                                                    src={product.images[0]}
+                                                    alt={product.name}
+                                                />
+                                            ) : (
+                                                <div className="no-image">
+                                                    📦
+                                                </div>
+                                            )}
+
+                                        </div>
+
+                                        {/* Product Info */}
+
+                                        <div className="product-info">
+
+                                            <div className="product-category">
+                                                {product.category_name}
+                                            </div>
+
+                                            <h3>
+                                                {product.name}
+                                            </h3>
+
+                                            <p className="product-description">
+                                                {product.description}
+                                            </p>
+
+                                            <div className="product-bottom">
+
+                                                <div>
+                                                    <span className="price-label">
+                                                        Price
+                                                    </span>
+
+                                                    <strong>
+                                                        Rs. {product.price}
+                                                    </strong>
+                                                </div>
+
+                                                <div className="stock-info">
+
+                                                    <span className="stock-label">
+                                                        Stock
+                                                    </span>
+
+                                                    <span
+                                                        className={
+                                                            product.stock > 0
+                                                                ? "stock-available"
+                                                                : "stock-out"
+                                                        }
+                                                    >
+                                                        {product.stock > 0
+                                                            ? `${product.stock} available`
+                                                            : "Out of stock"}
+                                                    </span>
+
+                                                </div>
+
+                                            </div>
+
+                                            {state.user.role === "admin" && (
+                                                <button
+                                                    className="delete-product-btn"
+                                                    onClick={() => setConfirmDeleteId(product.id)}
+                                                >
+                                                    Delete
+                                                </button>
+                                            )}
+
+                                        </div>
+
+                                    </div>
+
+                                ))}
+
+                            </div>
+
+                        ) : (
+
+                            <div className="empty-products">
+
+                                <div className="empty-icon">
+                                    📦
+                                </div>
+
+                                <h3>No Products Found</h3>
+
+                                <p>
+                                    Add your first product to get started.
+                                </p>
+
+                            </div>
+
+                        )}
+
+                        {products.length > 0 && (
+                            <div className="pagination">
+                                <button
+                                    className="pagination-btn"
+                                    disabled={page === 1}
+                                    onClick={() => setPage(page - 1)}
+                                >
+                                    ← Previous
+                                </button>
+
+                                <div className="pagination-pages">
+                                    {Array.from({ length: totalPages }, (_, index) => {
+                                        const pageNumber = index + 1;
+
+                                        return (
+                                            <button
+                                                key={pageNumber}
+                                                className={`page-btn ${page === pageNumber ? "active" : ""
+                                                    }`}
+                                                onClick={() => setPage(pageNumber)}
+                                            >
+                                                {pageNumber}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+
+                                <button
+                                    className="pagination-btn"
+                                    disabled={page === totalPages}
+                                    onClick={() => setPage(page + 1)}
+                                >
+                                    Next →
+                                </button>
+                            </div>
+                        )}
+
+                    </div>
+
+                </div>
+
+            </div>
+        </>
+    );
+};
+
+export default Product;
